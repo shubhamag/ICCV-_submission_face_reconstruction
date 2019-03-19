@@ -124,17 +124,23 @@ Prior work on 3D Face Reconstruction is substantially large and a complete liter
 
 Our approach takes advantage of the high frame rate capture available on modern smartphones, along with recent advances in automated keypoint and edge detection, to generate a highly accurate mesh of the face geometry. 
 The input to our pipeline is a small video sequence of a subject's face with a static expression, with the camera moving around the face from one profile to another.
-We process the video in three stages -  1) Photomeric Bundle Adjustment to estimate accurate camera poses (Sec \ref{sec:PBA}), 2) Point cloud generation using multi-view stereo (Sec \ref{sec:pcl}) and 3) Mesh fitting using a combination of constraints (Sec.\ref{sec:mesh_fit}). 
+We process the video in three stages -  1) Camera pose estimation (Sec \ref{sec:PBA}), 2) Point cloud generation using multi-view stereo (Sec \ref{sec:pcl}) and 3) Mesh fitting using a combination of constraints (Sec.\ref{sec:mesh_fit}). 
 
 
 
 %-------------------------------------------------------------------------
-\subsection{Photometric Bundle Adjustment} \label{sec:PBA}
-Most multi-view face reconstruction methods have traditionally relied on pre-calibrated cameras (such as in a studio setup) or used landmark trackers for estimating camera pose relative to a geometric prior, such as a template mesh or 3DMM. However, landmark trackers are less than reliable beyond a small angle from the front of the face, which reduces their utility for camera pose estimation.  For our method, we aim to get sub-pixel accurate camera pose estimates using recent advances in direct methods for visual SLAM.
+\subsection{Camera pose estimation} \label{sec:PBA}
+Most multi-view face reconstruction methods have traditionally relied on pre-calibrated cameras (such as in a studio setup) or used landmark trackers for estimating camera pose relative to a geometric prior, such as a template mesh or 3DMM. However, landmark trackers are less than reliable beyond a small angle from the front of the face, which reduces their utility for camera pose estimation.  For our method, we aim to get sub-pixel accurate camera pose estimates using recent advances in direct methods for visual SLAM, based on the seminal work by Engel \etal \cite{engel2018direct,engel2014lsd}. Direct methods are particularly effective for faces, where a lot of corner points are not present for feature point detection and matching.
 
-We take advantage of the fact that the input is a single continuous video sequence. We  , similar to the pipeline proposed in \cite{ham2017monocular}. We use a LK tracker to track the camera frames, and a keyframe is selected once the camera moves a certain baseline distance. Direct methods are particularly effective for faces, where a lot of corner points are not present for feature point detection and matching.  The photometric bundle adjustment , optimizing the camera poses alongside the intrinsics, radial distortion paramters keyframe camera poses are optimized using direct photometric error, which allows for . For a typical sequence, 50-80 keyframes with accurately known camera poses are obtained.
+We take advantage of the fact that the input is a single continuous video sequence. We use the geometric bundle adjustment based initilization scheme proposed in \cite{ham2017monocular} to get relative pose estimates of some initial frames. Then, a LK tracker is used to track the camera frames in the video, and a keyframe is selected once the camera moves a certain baseline distance. The set of keyframe camera poses are optimized using photometric bundle adjustment (Add math here ? ) 
 
-Although we use landmarks to fit a course mesh and align it with the keyframes, we do not use the landmarks or the mesh to estimate the camera poses themselves. The advantages of decoupling camera pose estimation and face alignment are three-fold: a) Robustness to landmark tracker failures, which, despite many recent advances, is not robust at large angles  b) By not relying on the estimated course mesh for registering camera poses, errors in the the shape estimation do not propogate to the camera poses. c) Purely using photometric consistency allows us to achieve subpixel accuracy in estimating camera poses. 
+
+PBA optimizes the camera poses alongside the intrinsics and radial distortion paramters. For a typical sequence, 50-80 keyframes with accurately known camera poses are obtained.
+
+
+Independently of the PBA, we use the publicly available Openface toolkit \cite{baltrusaitis2018openface} for facial landmark detection. Openface combines the Constrained Local Model (CLM) family of detectors with local CNN based landmark localization to achieve more robustness to pose variations, especially for profile views. We fit the Basel 3DMM \cite{blanz1999morphable} to these landmarks and align it with the coordinate system of the keyframes.\\
+
+The advantages of decoupling camera pose estimation and face alignment are three-fold: a) Robustness to landmark tracker failures, which, despite many recent advances, is not robust at large angles  b) By not relying on the estimated course mesh for registering camera poses, errors in the the shape estimation do not propogate to the camera poses. c) Purely using photometric consistency allows us to achieve subpixel accuracy in estimating camera poses. 
 
 %-------------------------------------------------------------------------
 \subsection{Point cloud generation} \label{sec:pcl}
@@ -178,22 +184,19 @@ Due to factors like non-ideal lighting, lack of texture and sensor noise of the 
 \label{fig:mesh_comp}
 \end{figure}
 
- Previously, techniques inspired from statistical ICP have proposed fitting. However, this defeats the purpose of not being constrained to an existing linear basis of shape.
+ Previously, techniques inspired from statistical ICP have propsoed fitting a 3DMM to a point cloud \cite{schneider2009fitting,bazik2017robust}. However, they often assume that the point cloud is a "clean" one obtained from a RGB-D sensor. Further, this defeats the purpose of not being constrained to an existing linear basis of shape.
  We thus adapt the non-rigid mesh fitting algorithm of \cite{amberg2007optimal}, originally proposed for register template meshes to 3d scanner data, to deform a template using a combination of constraints given by the point cloud, landmarks, mesh stiffness and edge constraints. 
- \subsubsection{Point cloud and landmark constraints}
- The primary constraint for the mesh deformation comes from the 3D information captured in the point cloud and landmarks.
- While well studied techniques exist to register a template mesh to a 3D scanned mesh \cite{amberg2007optimal}, registering a mesh to point clouds of the sort obtained from multi-view stereo techniques is more challenging. 
  
- Thus for each vertex on the template mesh we obtain its desired location in 3D as the median of these points. \\
  
- The other source of information are the 68 2D landmarks obtained using the automatic landmarking solution of \cite{baltrusaitis2018openface}. For the set of frames for which the landmarks have been annotated with high confidence by the tracker (typically close to frontal poses), we solve for the 3D locations of the landmarks by minimizing geometric reporjection error, 
- \begin{equation}
-    E_{X_{j}} = \sum_{i} \sum_{j} d(\pi (\theta_{i},X_{j}),x_{ij})^2
-\end{equation}
-Where $\theta_i$ is the $i$-th camera's pose, $X_{j}$ is the $j$-th landmark's coordinates in 3D, and $x_{ij}$ is the 2D coordinate of the landmark returned by the landmark tracker for the $i$-th frame. For our purposes, we ignore the 18 landmarks corresponding to the face contour, and use the remaining 50 landmarks as additional constraint for the corresponding 3D vertices. 
-
-
- \begin{figure}[t]
+ \subsubsection{Point cloud constraints}
+ The primary constraint for the mesh deformation comes from the 3D information captured in the point cloud.
+ While well studied techniques exist to register a template mesh to a 3D scanned mesh \cite{amberg2007optimal}, registering a mesh to point clouds of the sort obtained from multi-view stereo techniques is more challenging. For example, simply fitting each vertex to its nearest-neighbor in the point cloud will cause the mesh to become extremely noisy, as there will be many outlier points. \\
+ 
+To address this, we take advantage of the fact that for a template mesh, the vertex normals can be easily estimated. For each vertex, we select the points in its neighborhood, and for each point calculate its perendicuar distance to the normal of the vertex. Points withing a small threshold are accepted while the rest are rejected (see Fig. \ref{fig:mesh_fit_pcl}. 
+ 
+ For each vertex on the template mesh we obtain its desired location in 3D as the median of these points. \\
+ 
+\begin{figure}[t]
 \begin{center}
    \includegraphics[width=0.8\linewidth]{images/mesh_fit_pcl.png}
 \end{center}
@@ -201,18 +204,20 @@ Where $\theta_i$ is the $i$-th camera's pose, $X_{j}$ is the $j$-th landmark's c
 \label{fig:mesh_fit_pcl}
 \end{figure}
 
+ 
+ \subsubsection{Landmark constraints}
 
-\subsubsection{Edge constraints}
-Sihouette constraints have shown to be powerful cues in recent 3D reconstruction literature \cite{alldieck2018detailed,bas2016fitting}. For faces, views that are close to profile are particularly informative. However, since many single and multi-view approaches rely on landmarking for camera pose estimation, they fail to make use of silhouettes beyond a certain angle.
-However, as noted earlier, by solving for the camera poses independently of landmarking, we can actually make use of extreme profile views, which contain a lot of information for  areas that have typically proven to be challenging for face reconstruction algorithms, such as the nose, lips and lower chin/neck region.
-We use a combination of Z-buffering \cite{Foley1990ComputerG} and backface-culling  to estimate vertices that project an edge onto a given view. To find the corresponding edges in the RGB image, we use the Structured Forests edge detection approach proposed in \cite{dollar2013structured}. The corresponding point is backprojected in 3D to obtain a `target' in 3D for the vertex.
-T for each vertex corresponding to an 
+ The second source of information are the 68 2D landmarks obtained using the automatic landmarking solution of \cite{baltrusaitis2018openface}. Landmarks are important for global alignment and scaling of the mesh, as well as ensuring all the reconstructed meshes are in semantic correspondence.\\
+ For the set of frames for which the landmarks have been annotated with high confidence by the tracker (typically close to frontal poses), we solve for the 3D locations of the landmarks by minimizing geometric reporjection error, 
+ \begin{equation}
+    E_{X_{j}} = \sum_{i} \sum_{j} d(\pi (\theta_{i},X_{j}),x_{ij})^2
+\end{equation}
+Where $\theta_i$ is the $i$-th camera's pose, $X_{j}$ is the $j$-th landmark's coordinates in 3D, and $x_{ij}$ is the 2D coordinate of the landmark returned by the landmark tracker for the $i$-th frame. For our purposes, we ignore the 18 landmarks corresponding to the face contour, and use the remaining 50 landmarks as additional constraint for the corresponding 3D vertices.\\
 
-\subsubsection{Ear Landmarking}
 
-Almost all face reconstruction techniques are reliant on detecting keypoints on the face images, typically using the landmarks for aligning and estimating a course mesh shape.
-Historically, most landmark trakers have focused on the ibug 68 landmark scheme \cite{}, since it has the most data available for training learning based models. As a consequence, many reconstruction techniques either only focus on reconstructing the frontal face region, or generate a full mesh but evaluate only on the frontal section. Ears and the side facial regions have historically been completely ignored. Even deep learning based face alignement techniques do not do well on the ears, as the underlying training data is based on the ibug landmarks. This often leads to bad mesh (figure) bad alignment . 
-To explicity address this, we make use of a recent dataset by . We then train an ensemble of regression trees \cite{} for predicting landmarks using the bounding box detection as input. Despite the limited training data size, we are able to achieve
+Historically, most landmark trackers have focused on the , since it has the most data available for training learning based models. As a consequence, many reconstruction techniques either only focus on reconstructing the frontal face region, or generate a full mesh but evaluate only on the frontal section. Ears and the side facial regions have historically been completely ignored. Even deep learning based face alignement techniques do not do well on the ears, as the underlying training data is based on the the annotation/detection of these 68 landmarks.\\
+
+To explicity address this, we make use of a recent dataset of "in-the-wild" ear images annotated with bounding boxes and landmarks \cite{zhou2017deformable}. We first train the deep object detection model of Redmon \etal \cite{redmon2017yolo9000} for a single "ear" class. We then train an ensemble of regression trees \cite{kazemi2014one} for predicting landmarks using the bounding box detection as input. As seen in Fig \ref{fig:ear_lm_and_edges}, despite the limited training data size, we are able to achieve impressive robustness and accuracy in the landmark detection. We use a subset of the landmarks corresponding to the outer contour of the ear as additional landmark constraint in our mesh fitting.
 To the best of our knowledge, ours is the first face reconstruction method to explicity address the ears, which in turn improves overall accuracy and metrics like the width of the face.
 
 \begin{figure}[t]
@@ -224,10 +229,22 @@ To the best of our knowledge, ours is the first face reconstruction method to ex
 \end{figure}
 
 
+
+
+
+
+\subsubsection{Edge constraints}
+Sihouette constraints have shown to be powerful cues in recent 3D reconstruction literature \cite{alldieck2018detailed,bas2016fitting}. For faces, views that are close to profile are particularly informative. However, since many single and multi-view approaches rely on landmarking for camera pose estimation, they fail to make use of silhouettes beyond a certain angle.
+However, as noted earlier, by solving for the camera poses independently of landmarking, we can actually make use of extreme profile views, which contain a lot of information for  areas that have typically proven to be challenging for face reconstruction algorithms, such as the nose, lips and lower chin/neck region.
+We use a combination of Z-buffering \cite{Foley1990ComputerG} and backface-culling  to estimate vertices that project an edge onto a given view. To find the corresponding edges in the RGB image, we use the Structured Forests edge detection approach proposed in \cite{dollar2013structured}. For each vertex projecting an edge in the frame, its nearest neighbour is found in the edge map. This corresponding point is backprojected in 3D to obtain a "target" location for the vertex in 3D.
+
+
+
  \subsubsection{Putting it all together}
+ With the combination of the cues from the point cloud, keypoints and silhouettes, we obtain a set of mapping from the template mesh vertices (source) to coordinates in 3D (target). This can then be expressed in the iterative linear system based non-rigid mesh registration algorithm proposed by Amberg et al \cite{amberg2007optimal}. 
  
- 
- At each iteration, a linear system of the form AX=B is solved, where X is a 4x4n matrix the per vertex 4x4 transform matrix. The matrix A is a stack of  and the source vertices. The matrix B contains the corresponding `target' locations in 3D. The mesh stiffness and the weights of the landmarks is gradually decreased, gradually moving from global stretching to local,data driven deformations. For further details we refer the reader to the orignal paper by Amberg et al. For our template, we use the Basel 3DMM mesh \cite{blanz1999morphable}, simply beacuse of its prevalence as an input or output of several face reconstruction algorithms.
+ At each iteration, a linear system of the form $AX=B$ is solved, where \textbf{X} is a $4x4n$ matrix, the per vertex 4x4 transform matrix. The matrix \textbf{A} captures information of the source template, in terms of the mesh connectivity and vertex locations. The mesh connectivity acts as a adjustable "stiffness" regularization, which controls how much neighboring vertices can move with respect to each other. The matrix 
+ \textbf{B} contains the corresponding "target" locations in 3D. The mesh stiffness and the weights of the landmarks is gradually decreased, gradually moving from global stretching to local,data driven deformations. Ater every few iterations, the point cloud and edge constraints are recalculated using the current locations of the vertices. For further details we refer the reader to the original paper. For our template, we use the Basel 3DMM mesh \cite{blanz1999morphable}, simply beacuse of its prevalence as an input or output of several face reconstruction algorithms.
 
 % \begin{table}
 % \begin{center}
@@ -262,15 +279,13 @@ To the best of our knowledge, ours is the first face reconstruction method to ex
 
 \section{Experiments}
 
-You must include your signed IEEE copyright release form when you submit
-your finished paper. We MUST have this form before your paper can be
-published in the proceedings.
-
+Describe input video, recorded with iphoneX 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 \subsection{Quantitative Evaluation}
 
+Describe: 10 subjects, standing , video followed by Arctic EVA structured light sensor, to ensure consistent geometery between video and face
 \begin{table*}[t]
 \centering
 \caption{Quantitative results against ground truth scans. We evaluate the state of the art single and multi-view reconstruction methods. As is common in MVS benchmarks, we evaluate the reconstructions in terms of avarage distance from reconstruction to ground truth (accuracy) and distance from ground truth to reconstruction (completion).}
@@ -309,12 +324,13 @@ Ours    &  0.881          & 1.073 & 0.977 & 61.54          & 44.98 \\
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5%%
-
+\subsubsection{Comparison against other methods}
 Maybe mention methods whose number are avaiable but code isnt.
 
 compared to such such and , they only report ( ) and we are better. 
 ear     
 \subsubsection{Ablation studies}
+Without edges, without ear landmarks
 
 \subsection{Qualitative evaluation}
 \begin{figure}[t]
@@ -345,8 +361,6 @@ We also note that since there is dense correspondence and consistent topology ac
 
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Dataset}
@@ -386,6 +400,7 @@ UHDB11 & 23 & 12\\
 \section{Conclusion}
 Limitations, importance to community
 
+\newpage
 \newpage
 {\small
 \bibliographystyle{ieee}
