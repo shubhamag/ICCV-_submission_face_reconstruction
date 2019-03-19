@@ -62,8 +62,8 @@ First line of institution2 address\\
 \maketitle
 \vspace{-1em}
 \begin{center}
-   \centering \includegraphics[width=\textwidth]{../images/header_2.png} \captionof{figure}{Our method uses a single video clip of a person taken in unconstrained conditions and uses it to reconstruct sub-milimeter accurate geometry of the subject's face.}
-   \figlabel{cover}
+   \centering \includegraphics[width=\textwidth]{../images/cover_chaoyang.png} \captionof{figure}{a) Our method uses a single video clip of a subject taken in an unconstrained environment to reconstruct a high accuracy mesh of the face geometery. b) Our textured mesh side-by-side with input rgb image c) Our method (left) compared to the state-of-the-art method of \cite{hernandez2017accurate}(right), front and profile view.}
+   \label{cover}
 \end{center}%
 }]
 
@@ -83,27 +83,24 @@ First line of institution2 address\\
 \section{Introduction}
 
 
-Reconstructing faces has been a problem of great interest in computer vision and graphics with applications in a wide variety of domains, ranging from animation \cite{ichim2015dynamic}, entertainment \cite{saito2016real}, genetics, biometrics, and more recently, augmented and virtual reality. Despite the long body of work, 3D Face Reconstruction still remains an open and challenging problem, primarily because the high level of detail required owing to our sensitivity to facial features. Even slight anomalies in the reconstructions can make the output look unrealistic and hence, accuracy of reconstructed face models is of utmost importance.
+Reconstructing faces has been a problem of great interest in computer vision and graphics with applications in a wide variety of domains, ranging from animation \cite{ichim2015dynamic}, entertainment \cite{saito2016real}, genetics, biometrics, and more recently, augmented and virtual reality. Despite the long body of work, 3D face reconstruction still remains an open and challenging problem, primarily because the high level of detail required owing to our sensitivity to facial features. Even slight anomalies in the reconstructions can make the output look unrealistic and hence, accuracy of reconstructed face models is of utmost importance.
 
 
 The seminal work of Beeler \etal \cite{beeler2010high} used a studio setup of cameras to capture face geometry accurately. Since then, a variety of work has focused on using Photometric stereo or Multi-view stereo techniques in studio settings for face reconstruction and performance capture \cite{cao2018sparse, fyffe2017multi}. 
-Although accurate in their reconstructions, these studio setups are not trivial to setup, typically requiring a calibrated camera setup along with controlled lighting and backgrounds. This makes them infeasible for capturing `in-the-wild' subject faces in unconstrained settings, for instance an end user of a virtual reality app. For the purposes of animation or modeling, accurate 3D scans can be obtained from structured light or laser scanner, which are often prohibitively expensive, often costing tens of thousands of dollars. 
+Although accurate in their reconstructions, these studio setups are not trivial to setup, typically requiring a calibrated camera setup along with controlled lighting and backgrounds. This makes them infeasible for capturing `in-the-wild' subject faces in unconstrained settings, for instance an end user of a virtual reality app. For the purposes of animation or modeling, accurate 3D scans can be obtained from structured light or laser scanners, which are often prohibitively expensive, typically costing tens of thousands of dollars. 
 
-To tackle the problem of unconstrained 3D face reconstruction, the community has mostly relied on three-dimensional morphable models (3DMMs)~\cite{blanz1999morphable}. 3DMMs are low-dimensional linear subspaces of faces typically constructed using a small set of ground truth 3D scans that enable rapid approximation of face geometry, typically through a combination of appearance based and landmark based optimization. *talk about single view, recent focus all on deep learning single view *. However, single view depth estimation is a fundamentally ill-posed problem. Coupled with the reliance on synthetic data, generalization to in-the-wild images is often a concern for these methods. While able to generate visually appealing results, the reconstructions often suffer from high geometric inaccuracies.
+To tackle the problem of unconstrained 3D face reconstruction, the community has mostly relied on three-dimensional morphable models (3DMMs)~\cite{blanz1999morphable}. 3DMMs are low-dimensional linear subspaces of faces typically constructed using a small set of ground truth 3D scans that enable rapid approximation of face geometry, typically through a combination of appearance based and landmark based optimization. In recent years, there has been a lot of interest in using deep neural nets to fit morphable models using a single image. However, single view depth estimation is a fundamentally ill-posed problem. Coupled with the reliance on synthetic data, generalization to in-the-wild images is often a concern for these methods. Often, while the results are visually appealing with texture, the reconstructions suffer from high geometric inaccuracies.
 
+With the limited availability of 3D data for faces, using geometric cues from multiple views to improve accuracy of reconstruction becomes necessary. Previous work has shown that a single template or 3DMM can be optimized using constraints from multiple views, using techniques like photometric stereo \cite{roth2015unconstrained} or advances in automatic keypoint detection \cite{huber2016multiresolution}.
 Recently, Hernandez et. al \cite{hernandez2017accurate} proposed an elegant multi-view constrained structure-from-motion scheme that explicitly optimized the coefficients of a 3DMM shape to recover face geometry. However, the output still remains constrained to the underlying training data and low capacity of the 3DMM. This greatly limits its expressivity, and is particularly undesirable for medical or biometric usage. 
 
 
-\begin{itemize}
-    \item with the current limitations in 3d face data, clearly a direct 3d structure estimation is not sufficient for guaranteed accuracy. Only a thoughtful, elegant integration of classical methods and advances in learning based methods...
-\end{itemize}
-
-In this work, we attempt to answer the question ``What's the most accurate reconstruction an end-user can obtain, without needing access to special equipment or studio setups?". To that end, we propose a pipeline for highly accurate yet robust face geometry capture, requiring nothing but a smartphone. We leverage recent advances in the fields of object and keypoint detection, direct methods for visual SLAM, and high-frame rate capture functionality available on modern smartphones to propose a pipeline that achieves state-of-the-art geometric accuracy among unconstrained face reconstruction techniques.
+In this work, we attempt to answer the question ``What's the most accurate reconstruction an end-user can obtain, without needing access to special equipment or studio setups?". To this end, we propose a pipeline for highly accurate yet robust face geometry capture, requiring nothing but a smartphone. We leverage recent advances in the fields of object and keypoint detection, direct methods for visual SLAM, and high-frame rate capture functionality available on modern smartphones to propose a pipeline that achieves state-of-the-art geometric accuracy among unconstrained face reconstruction techniques.
 
 Our major contributions are as follows:
  \begin{itemize}
-     \item  A fully automatic pipeline that takes a single video of a subject's face and reconstructs their face geometry with high fidelity. The reconstrcuted meshes are in dense semantic correspondence without beign constrained to any model subspace, making them ideal for usage in downstream tasks like animation, printing, genetic analyisis/modeling, biometrics etc. We make the code public, allowing anyone to be able to obtain accurate reconstructions of faces
-     \item A collected dataset of 200 high-frame-rate  sequences of 100 individuals, where we collect two sequences per subject, under varying lighitng conditions.
+     \item  A principled reconstruction pipeline that takes a single video of a subject's face and reconstructs their face geometry with high fidelity. The reconstructed meshes are in dense semantic correspondence without beign constrained to any model subspace, making them ideal for usage in downstream tasks like animation, printing, genetic analyisis/modeling, biometrics etc. We make the code public, allowing anyone to be able to obtain accurate reconstructions of faces
+     \item A collected dataset of 200 high-frame-rate  sequences of 100 individuals, where we collect two sequences per subject, under varying lighting conditions.
  \end{itemize}
 
 \section{Prior Work}
@@ -123,31 +120,27 @@ Prior work on 3D Face Reconstruction is substantially large and a complete liter
 %%%%%         METHOD              %%%%%%%%%%%%%%%%%%%%%%---------------------------------
 
 %------------------------------------------------------------------------
-\section{Method}
+\section{Approach}
 
-The input to our pipeline is a small video sequence of a subject's face, with a static expression, with the camera moving around the face from one profile to another.
-Our method takes a princpiled, data driven approach that takes advantage of the high frame rate capture available on modern smartphones, along with recent advances in automated face landmarking and edge detection, to generate a highly accurate mesh of the face geometry. 
-
-
-%-------------------------------------------------------------------------
+Our approach takes advantage of the high frame rate capture available on modern smartphones, along with recent advances in automated keypoint and edge detection, to generate a highly accurate mesh of the face geometry. 
+The input to our pipeline is a small video sequence of a subject's face with a static expression, with the camera moving around the face from one profile to another.
+We process the video in three stages -  1) Photomeric Bundle Adjustment to estimate accurate camera poses (Sec \ref{sec:PBA}), 2) Point cloud generation using multi-view stereo (Sec \ref{sec:pcl}) and 3) Mesh fitting using a combination of constraints (Sec.\ref{sec:mesh_fit}). 
 
 
 
 %-------------------------------------------------------------------------
-\subsection{Photometric Bundle Adjustment}
+\subsection{Photometric Bundle Adjustment} \label{sec:PBA}
+Most multi-view face reconstruction methods have traditionally relied on pre-calibrated cameras (such as in a studio setup) or used landmark trackers for estimating camera pose relative to a geometric prior, such as a template mesh or 3DMM. However, landmark trackers are less than reliable beyond a small angle from the front of the face, which reduces their utility for camera pose estimation.  For our method, we aim to get sub-pixel accurate camera pose estimates using recent advances in direct methods for visual SLAM.
 
-\subsubsection{Initialization}
-PReviois attempts multi view, landmark for alignment. 
-Although we use lndmarks to fit a course mesh and align it with the camera poses, we do not use the landmarks or the mesh toestimate the camera poses. Decoupling the problems of camera pose estimation and face alignment gives us the following advantages: a) We become robust to landmark tracker failures, which, despite many recent advances, is not robust at large angles  b) By not relying on the estimated course mesh for registering camera poses, errors in the the shape estimation do not propogate to the camera poses. c) Purely using photometric consistency allows us to scheince subpixel accuracy in estimating camera poses. The estimated mesh is aligned to the poses and only used a
-pcsfm use bundle adjustment over this tto otpimzie it further. however since estimating 3d structure and camera positions is couple problem
-an inaccurate 3d strcuture estimate by a low capacity linear model, in turn leads to inaccurate camera pose estimates.
-in contrast, with a full direct method PBA, we can achiever camera positions with subpixel accuracy, and not be constrined to corner points,
-any point with sufficient gradient can be used.
+We take advantage of the fact that the input is a single continuous video sequence. We  , similar to the pipeline proposed in \cite{ham2017monocular}. We use a LK tracker to track the camera frames, and a keyframe is selected once the camera moves a certain baseline distance. Direct methods are particularly effective for faces, where a lot of corner points are not present for feature point detection and matching.  The photometric bundle adjustment , optimizing the camera poses alongside the intrinsics, radial distortion paramters keyframe camera poses are optimized using direct photometric error, which allows for . For a typical sequence, 50-80 keyframes with accurately known camera poses are obtained.
+
+Although we use landmarks to fit a course mesh and align it with the keyframes, we do not use the landmarks or the mesh to estimate the camera poses themselves. The advantages of decoupling camera pose estimation and face alignment are three-fold: a) Robustness to landmark tracker failures, which, despite many recent advances, is not robust at large angles  b) By not relying on the estimated course mesh for registering camera poses, errors in the the shape estimation do not propogate to the camera poses. c) Purely using photometric consistency allows us to achieve subpixel accuracy in estimating camera poses. 
 
 %-------------------------------------------------------------------------
-\subsection{Point cloud generation}
+\subsection{Point cloud generation} \label{sec:pcl}
 
-At the end of the PBA stage, we obtain a set of 50-80 keyframes whose camera poses are known with high accuracy, and a course face mesh fitted to the estimated 3d landmarks. Next, we use these keyframes to generate a dense point cloud of the face geometry, using Multi-view stereo.\\
+At the end of the PBA stage, we obtain a set of 50-80 keyframes whose camera poses are known with high accuracy, and a course face mesh fitted to the estimated 3D landmarks. Next, we use these keyframes to generate a dense point cloud of the face geometry, using Multi-view stereo.
+
 To select which source views to use to infer the depth map of a reference view, we calculate a view selection score for each pair of keyframes as follows : 
 \[ \mathcal{G}(\theta) =  \left\{
 \begin{array}{ll}
@@ -155,19 +148,28 @@ To select which source views to use to infer the depth map of a reference view, 
       \exp(-\frac{(\theta - \theta_0)^2}{2\sigma_2^2}), \theta > \theta_0 \\
 \end{array} 
 \right. \]
-This piecewise gaussian function favors a certain range of baseline angles. For our method, we pick 
-We use  . We initialize the depths and search range using the estimated course mesh. We use the parellelized multi-view patchmatch implementation of Galliani et. al. \cite{galliani2015massively} and use 12 source views for each reference view for depth inference.
+This piecewise gaussian function favors a certain range of baseline angles. For our method, we pick $\theta_{0} = $  , $\sigma_{1} =$  and $\sigma_2=$  .
+We initialize the depths and search range using the estimated course mesh. We use the parellelized multi-view patchmatch implementation of Galliani et. al. \cite{galliani2015massively} and use 12 source views for each reference view for depth inference.
 
 The multi-view patchmatch estimates a depth map for each of the keyframes. We use the estimated course mesh to filter out noisy patches in the estimated depth maps, before projecting the depth maps into a single fused point cloud using the fusion strategy proposed in \cite{galliani2015massively}.
 
-Example point clouds output at this step are visualizaed in Fig \ref{} . 
+Example point clouds output at this step are visualizaed in Fig \ref{fig:pcl_sample} . 
+
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.95\linewidth]{images/point_clouds_sample.png}
+\end{center}
+   \caption{Example point clouds generated at the end of our Point cloud generation stage. The point clouds accurately capture the overall face geometery and a lot of details in areas like eyes and lips, that make the person recognizable. However, the point clouds have missing data as well as noise, which requires a robust mesh fitting approach, discussed in section \ref{sec:mesh_fit}  }
+\label{fig:pcl_sample}
+\end{figure}
 
 %-------------------------------------------------------------------------
-\subsection{Mesh fitting}
+\subsection{Mesh fitting} \label{sec:mesh_fit}
 
 
-However due to factors like non-ideal lighting, lack of texture and sensor nise of the smartphone, the obtained point cloud is typically has noise and incompletions, with the points distributed around the "true" surface.
- , where our goal is to register a template mesh of  . Techniques like screen poisson reconstruction or the depth map fusion strategy of \cite{} either return meshes with lots of sruface noise, or extrememly smoothed out details, depending on the regularization used. Further, for the reconsgtructed mesh to be of use in further downstream tasks such as animation, biometrics or as input to a learning algorithm, it is extremely desirable for the meshes to have a consistent topology. \\
+Due to factors like non-ideal lighting, lack of texture and sensor noise of the smartphone, the obtained point cloud typically has noise and incompletions, with the points distributed around the `true' surface.
+ Techniques like screen poisson reconstruction or the depth map fusion strategy of \cite{hernandez2015near} either return meshes with lots of surface noise, or extremely smoothed out details, depending on the regularization used (see Fig. \ref{fig:mesh_comp}. Further, for the reconstructed mesh to be of use in further downstream tasks such as animation, biometrics or as input to a learning algorithm, it is extremely desirable for the meshes to have a consistent topology. \\
  \begin{figure}[t]
 \begin{center}
    \includegraphics[width=0.95\linewidth]{images/meshing_compare.png}
@@ -176,11 +178,11 @@ However due to factors like non-ideal lighting, lack of texture and sensor nise 
 \label{fig:mesh_comp}
 \end{figure}
 
- Previously, techniques inspired from statistical ICP have proposed fitting  . However, this defeats the purpose of not being constrained to an existing linear basis of shape.
- We thus adapt the non-rigid mesh fitting algorithm of \cite{amberg2007optimal}, originally proposed for register template meshes to 3d scanner data, to deform a template using a combination of constraints given by the point cloud, landmarks, mesh sitffness and edge constraints.
+ Previously, techniques inspired from statistical ICP have proposed fitting. However, this defeats the purpose of not being constrained to an existing linear basis of shape.
+ We thus adapt the non-rigid mesh fitting algorithm of \cite{amberg2007optimal}, originally proposed for register template meshes to 3d scanner data, to deform a template using a combination of constraints given by the point cloud, landmarks, mesh stiffness and edge constraints. 
  \subsubsection{Point cloud and landmark constraints}
  The primary constraint for the mesh deformation comes from the 3D information captured in the point cloud and landmarks.
- While there exist well studied existing techniques to register a template mesh to a 3D scanned mesh \cite{amberg2007optimal}, registering a mesh to point clouds of the sort obtained from multi-view stereo techniques is more challenging. 
+ While well studied techniques exist to register a template mesh to a 3D scanned mesh \cite{amberg2007optimal}, registering a mesh to point clouds of the sort obtained from multi-view stereo techniques is more challenging. 
  
  Thus for each vertex on the template mesh we obtain its desired location in 3D as the median of these points. \\
  
@@ -201,45 +203,48 @@ Where $\theta_i$ is the $i$-th camera's pose, $X_{j}$ is the $j$-th landmark's c
 
 
 \subsubsection{Edge constraints}
-Sihouette constraints have shown to be powerful queues in recent 3D reconstruction literature \cite{alldieck2018detailed,bas2016fitting}. For faces, views that are close to profile are particularly informative. However, since many single and multi-view approaches rely on landmarking for camera pose estimation, they fail to make use of silhouettes beyond a certain angle.
-However, as noted earlier, by solving for the camera poses independently of landmarking, we can actually make use extreme profile views, which contain a lot of information for  areas that have typically proven to be challenging for face reconstruction algorithms, such as the nose, lips and lower chin/neck region.
-We use a combination of Z-buffering \cite{Foley1990ComputerG} and backface-culling  to estimate vertices that project an edge onto a given view. To find the corresponding edges in the rgb image, we use the Structured Forests edge detection approach proposed in \cite{dollar2013structured}. The corresponding point is backprojected in 3D to obtain a "target" in 3D for the vertex.
+Sihouette constraints have shown to be powerful cues in recent 3D reconstruction literature \cite{alldieck2018detailed,bas2016fitting}. For faces, views that are close to profile are particularly informative. However, since many single and multi-view approaches rely on landmarking for camera pose estimation, they fail to make use of silhouettes beyond a certain angle.
+However, as noted earlier, by solving for the camera poses independently of landmarking, we can actually make use of extreme profile views, which contain a lot of information for  areas that have typically proven to be challenging for face reconstruction algorithms, such as the nose, lips and lower chin/neck region.
+We use a combination of Z-buffering \cite{Foley1990ComputerG} and backface-culling  to estimate vertices that project an edge onto a given view. To find the corresponding edges in the RGB image, we use the Structured Forests edge detection approach proposed in \cite{dollar2013structured}. The corresponding point is backprojected in 3D to obtain a `target' in 3D for the vertex.
 T for each vertex corresponding to an 
 
 \subsubsection{Ear Landmarking}
 
 Almost all face reconstruction techniques are reliant on detecting keypoints on the face images, typically using the landmarks for aligning and estimating a course mesh shape.
-Historically, most landmark trakers have focussed on the ibug 68 landmark scheme \cite{}, since it has the most data available for training learning based models. As a consequence, many reconstruction techniques either only focus on reconstructing the frontal face region, or generate a full mesh but evaluate only on the frontal section. Ears and the side facial regions have historically been completely ignored. Even deep learning based face alignement techniques do not do well on the ears, as the underlying training data is based on the ibug landmarks. This often leads to bad mesh (figure) bad alginment . 
+Historically, most landmark trakers have focused on the ibug 68 landmark scheme \cite{}, since it has the most data available for training learning based models. As a consequence, many reconstruction techniques either only focus on reconstructing the frontal face region, or generate a full mesh but evaluate only on the frontal section. Ears and the side facial regions have historically been completely ignored. Even deep learning based face alignement techniques do not do well on the ears, as the underlying training data is based on the ibug landmarks. This often leads to bad mesh (figure) bad alignment . 
 To explicity address this, we make use of a recent dataset by . We then train an ensemble of regression trees \cite{} for predicting landmarks using the bounding box detection as input. Despite the limited training data size, we are able to achieve
-To the best of our knowledge, ours is the first face reconstruction method to explicity address the ears, which in turn improves overall accuracy and metric like the width of the face.
+To the best of our knowledge, ours is the first face reconstruction method to explicity address the ears, which in turn improves overall accuracy and metrics like the width of the face.
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.95\linewidth]{images/ear_lm_and_edges.png}
+\end{center}
+   \caption{ a) We train a bounding box and landmark detector specifically for ears. This improves our reconstructions's overall accuracy while allowing us to capture ear size and contour. b) Visualization of edge constraints. Edges in rgb image are shown in yellow, mesh vertices projected in blue. Note that our mesh fits the ears well because of the landmark detection }
+\label{fig:ear_lm_and_edges}
+\end{figure}
+
 
  \subsubsection{Putting it all together}
  
  
- At each iteration, a liner system of the form AX=B is solved, where X is a 4x4n matrix the per vertex 4x4 transform matrix. The matrix A is a stack of  and the source vertices. The matrix B contains the corresponding "target" locations in 3D. The mesh stiffness and the weights of the landmarks isf gradually decreased, gradually moving from global stretching to local,data driven deformations. For further details we refer the reader to the orignal paper by Amberg et al. 
+ At each iteration, a linear system of the form AX=B is solved, where X is a 4x4n matrix the per vertex 4x4 transform matrix. The matrix A is a stack of  and the source vertices. The matrix B contains the corresponding `target' locations in 3D. The mesh stiffness and the weights of the landmarks is gradually decreased, gradually moving from global stretching to local,data driven deformations. For further details we refer the reader to the orignal paper by Amberg et al. For our template, we use the Basel 3DMM mesh \cite{blanz1999morphable}, simply beacuse of its prevalence as an input or output of several face reconstruction algorithms.
 
-\begin{table}
-\begin{center}
-\begin{tabular}{|l|c|}
-\hline
-Method & Frobnability \\
-\hline\hline
-Theirs & Frumpy \\
-Yours & Frobbly \\
-Ours & Makes one's heart Frob\\
-\hline
-\end{tabular}
-\end{center}
-\caption{Results.   Ours is better.}
-\end{table}
+% \begin{table}
+% \begin{center}
+% \begin{tabular}{|l|c|}
+% \hline
+% Method & Frobnability \\
+% \hline\hline
+% Theirs & Frumpy \\
+% Yours & Frobbly \\
+% Ours & Makes one's heart Frob\\
+% \hline
+% \end{tabular}
+% \end{center}
+% \caption{Results.   Ours is better.}
+% \end{table}
 
-%-------------------------------------------------------------------------
-\subsection{Edge Constraints}
-
-Please refer to the author guidelines on the ICCV 2019 web page for a discussion
-of the use of color in your document.
-
-%------------------------------------------------------------------------
+%---------------------------
 
 
 
@@ -247,7 +252,7 @@ of the use of color in your document.
 
 \begin{itemize}
     \item Previous work on "dark-is-deep" assumption. Mention learnt mesoscopic and studio requirement
-    \item Mention i2i mesh , we proopose band pass formulation 
+    \item Mention i2i mesh heat flow for high pass, we propose band pass formulation 
     \item Capture medium scale detail by deforming directly with difference from mean
 \end{itemize}
 %------------------------------------------------------------------------
@@ -268,7 +273,7 @@ published in the proceedings.
 
 \begin{table*}[t]
 \centering
-\caption{Quantitative results on the \textit{DTU}'s evaluation set \cite{aanaes2016large}. We evaluate the state of the art single and multi-view reconstruction methods. The Calibration Required column notes of the method requires camera intrinsics to be known. We using both the distance metric \cite{aanaes2016large} (lower is better), and the percentage metric \cite{knapitsch2017tanks} (higher is better) with respectively $1mm$, $2mm$ and $3mm$ thresholds}
+\caption{Quantitative results against ground truth scans. We evaluate the state of the art single and multi-view reconstruction methods. As is common in MVS benchmarks, we evaluate the reconstructions in terms of avarage distance from reconstruction to ground truth (accuracy) and distance from ground truth to reconstruction (completion).}
 % \resizebox{\textwidth}{!}{%
 \begin{tabular}{c |c| c | c c c}
 \hline
@@ -276,14 +281,15 @@ Method & Single/Multi-view & Calibration Req. & Accuracy & Completion & Consiste
 \hline\hline
 Furu \cite{furukawa2010accurate}       & 0.612          & 0.939          & 0.775          & 69.37          & 57.97      \\ 
 Tola \cite{Tola2011EfficientLM}      & 0.343          & 1.190          & 0.766          & 88.96          & 53.88            \\ 
+\hline
+SurfaceNet\cite{ji2017surfacenet} & 0.450          & 1.043           & 0.746          & 75.73 & 66.3  \\ 
+MVSNet\cite{mvsnet}     & 0.444         & 0.741 & 0.592 & 82.93          & 62.71 \\
 
 \hline
-Ours (Baseline)    &  1.565          & 1.378 & 1.472 & 46.90          & 42.16  \\
-Ours (Baseline+G)    &  1.069          & 1.020 & 1.045 & 55.98          & 45.24\\
-Ours (Robust)    &  0.881          & 1.073 & 0.977 & 61.54          & 44.98 \\
-\hline
-SurfaceNet\cite{ji2017surfacenet} & 0.450          & 1.043           & 0.746          & 75.73 & 66.6                 \\ 
-MVSNet\cite{mvsnet}     & 0.444         & 0.741 & 0.592 & 82.93          & 62.71 \\
+Ours w/o Edges    &  1.565          & 1.378 & 1.472 & 46.90          & 42.16  \\
+Ours w/o ear lms    &  1.069          & 1.020 & 1.045 & 55.98          & 45.24\\
+Ours    &  0.881          & 1.073 & 0.977 & 61.54          & 44.98 \\
+
 
 % \specialrule{.16em}{.08em}{.081em}
 \hline
@@ -295,10 +301,10 @@ MVSNet\cite{mvsnet}     & 0.444         & 0.741 & 0.592 & 82.93          & 62.71
 
 \begin{figure*}
 \begin{center}
-\fbox{\rule{0pt}{5in} \rule{.9\linewidth}{0pt}}
+   \includegraphics[width=0.95\linewidth]{images/ICCV_verticals.png}
 \end{center}
-   \caption{Example of a short caption, which should be centered.}
-\label{fig:short}
+  \caption{Reconstruction and error heat map visualization of various approaches}
+\label{fig:results}
 \end{figure*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -324,9 +330,18 @@ ear
 Compare against scan obtained by structure 3d sensor -> comment on better than low cost depth sensor, while being eeve easier for the end user.
 
 \subsubsection{Expressions}
+
+ \begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.8\linewidth]{images/expression_dummy.png}
+\end{center}
+   \caption{ TEMP, DONT PUT SELF FACE- COLLECT other scans from lab, potentially push to suplementary }
+\label{fig:expressions}
+\end{figure}
+
 Since our method captures the geometry of the face in a completely data-driven manner, it also generalizes to deformations caused by expressions. 
-Since it is difficult to hold the same expression through a video sequence and also obtain a corresponding ground truth 3D, we skip quantitative evaluation of this and provide some qualitative visualizations. 
-We also note that since there is dense correspondence and consistent topology across meshes, various existing techniques \cite{} multiv cosistent anchor frames, rigging, animation, blendshapes/warehouse , can be applied seemlessly with our reconstruction to generate animated, expressive face models.
+Since it is difficult to hold the same expression through a video sequence and also obtain a corresponding ground truth 3D, we skip quantitative evaluation of this and provide some qualitative visualizations in Fig \ref{fig:expressions}. 
+We also note that since there is dense correspondence and consistent topology across meshes, various existing techniques \cite{} multiv cosistent anchor frames, rigging, animation, blendshapes/warehouse, can be applied with our reconstructed meshes to generate animated, expressive face models.
 
 
 
@@ -371,6 +386,7 @@ UHDB11 & 23 & 12\\
 \section{Conclusion}
 Limitations, importance to community
 
+\newpage
 {\small
 \bibliographystyle{ieee}
 \bibliography{egbib}
