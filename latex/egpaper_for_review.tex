@@ -92,11 +92,9 @@ Recently, Hernandez \etal \cite{hernandez2017accurate} proposed an elegant multi
 
 In this work, we attempt to answer the question ``What's the most accurate reconstruction an end-user can obtain, without needing access to special equipment or studio setups?". To this end, we propose a pipeline for highly accurate yet robust face geometry capture, requiring nothing but a smartphone. We leverage recent advances in the fields of object and keypoint detection, direct methods for visual SLAM, and higher frame-rate capture functionality available on modern smartphones to propose a pipeline that achieves state-of-the-art geometric accuracy among unconstrained face reconstruction techniques.
 
-Our major contributions are as follows:
- \begin{itemize}
-     \item  A 3D face reconstruction algorithm that takes a single video of a subject's face and reconstructs their face geometry with high fidelity. The reconstructed meshes have semantic correspondence and consistent topology, without being constrained to any model subspace. This makes them ideal for downstream tasks like animation, printing, genetic analysis/modeling, biometrics etc. We make the code public, allowing anyone to be able to obtain accurate reconstructions of faces.
-     \item A collected dataset of 200 high frame-rate  sequences of 100 individuals, where we collect two sequences per subject, under varying lighting conditions.
- \end{itemize}
+Our contributions are two-fold. First, we propose a 3D face reconstruction algorithm that takes a single video of a subject's face and reconstructs their face geometry with high fidelity. The reconstructed meshes have semantic correspondence and consistent topology, without being constrained to any model subspace, making them ideal for downstream tasks like animation, printing, genetic analysis/modeling and biometrics. Second, we release a dataset 200 high frame-rate sequences of 100 individuals, where we collect two sequences per subject, under varying lighting conditions. 
+
+We will make the code public, allowing anyone to obtain accurate reconstructions of faces.
 
 \section{Prior Work}
 Prior work on 3D Face Reconstruction is substantially large and a complete literature review is out of scope for the paper. Here, we talk about about some of the works closely related to ours.
@@ -143,7 +141,7 @@ At the end of the PBA stage, we obtain a set of 50-80 keyframes whose camera pos
  We use the parallelized multi-view Patchmatch implementation of Galliani \etal \cite{galliani2015massively} and use 12 source views for each reference view for depth inference. The multi-view PatchMatch estimates a depth map for each of the keyframes. We initialize the depths and search range using the coarse mesh.
 
 
-To select which source views to use to infer the depth map of a reference view, we calculate a view selection score \cite{yao2018mvsnet} for each pair of keyframes, $s(i, j) = \sum_{\mathbf{p}} \mathcal{G}(\theta_{ij}(\mathbf{p}))$ , where $\mathbf{p}$ is a point common to both views and $\theta_{ij}(\mathbf{p}) = (180/\pi)\arccos((\mathbf{c}_i - \mathbf{p}) \cdot (\mathbf{c}_j - \mathbf{p}))$ . $\mathcal{G}$ is a piecewise gaussian, as follows :
+To select which source views to use to infer the depth map of a reference view, we calculate a view selection score \cite{yao2018mvsnet} for each pair of keyframes, $s(i, j) = \sum_{\mathbf{p}} \mathcal{G}(\theta_{ij}(\mathbf{p}))$ , where $\mathbf{p}$ is a point common to both views and $\theta_{ij}(\mathbf{p}) = (180/\pi)\arccos((\mathbf{c}_i - \mathbf{p}) \cdot (\mathbf{c}_j - \mathbf{p}))$. $\mathcal{G}$ is a piecewise gaussian, as follows :
 \[ \mathcal{G}(\theta) =  \left\{
 \begin{array}{ll}
       \exp(-\frac{(\theta - \theta_0)^2}{2\sigma_1^2}), \theta \leq \theta_0 \\
@@ -153,7 +151,7 @@ To select which source views to use to infer the depth map of a reference view, 
 For our method, we pick $\theta_{0} =10 $  , $\sigma_{1} =5$  and $\sigma_2=10$  .
  We use the estimated coarse mesh to filter out noisy patches in the depth maps produced by the PatchMatch, before projecting the depth maps into a single fused point cloud using the fusion strategy proposed in \cite{galliani2015massively}.
 
-Example point clouds output at this step are visualized in Fig \ref{fig:pcl_sample} . 
+Example point clouds output at this step are visualized in Fig \ref{fig:pcl_sample}. 
 
 
 \begin{figure}[t]
@@ -284,7 +282,7 @@ For 10 subjects among the videos we collected, we obtained high accuracy 3D face
 % However the methods of Roth \etal and PCSfM are not able to make use of all of our keyframes as they are reliant on landmark detectors for alignment and pose estimation, and so typically only use frames in a cone around the front of the face. For the method of multi-view landmark fitting, we use the whole video, using the implementation provided in 4dface \cite{huber2016multiresolution}). 
 For all methods except PCSfM, the authors make their implementations public and we use those for evaluation. For PCSfM, we use our own implementation.
 
-A challenge in fair quantitative evaluation arises from the fact that different methods reconstruct different amounts of the face area as defined by the Basel mesh, such as frontal only in pix2vertex \cite{sela2017unrestricted} , front and side without ears in PRN \cite{feng2018joint}, full Basel mesh for PCSfM \cite{hernandez2017accurate} and arbitrary in SfM (using COLMAP \cite{schonberger2016structure}). To address this, we first register a standard Basel mesh to the ground truth 3D scans using Non-rigid ICP \cite{amberg2007optimal,booth2018large}. We then borrow a strategy from MVS benchmarks \cite{jensen2014large,knapitsch2017tanks,yao2018mvsnet} to evaluate the reconstructions using \textbf{Accuracy} - the mean distance from the reconstruction's vertices to the ground truth, and \textbf{Completion} - the mean distance from the ground truth's vertices to the reconstruction. Thus, if a method reconstructs only the frontal face, it might do well in Accuracy and be penalized in Completion.
+A challenge in fair quantitative evaluation arises from the fact that different methods reconstruct different amounts of the face area as defined by the Basel mesh, such as frontal only in pix2vertex \cite{sela2017unrestricted} , front and side without ears in PRN \cite{feng2018joint}, full Basel mesh for PCSfM \cite{hernandez2017accurate} and arbitrary in SfM (using COLMAP \cite{schonberger2016structure}). To address this, we first register a standard Basel mesh to the ground truth 3D scans using Non-rigid ICP \cite{amberg2007optimal,booth2018large}. We then borrow a strategy from MVS benchmarks \cite{jensen2014large,knapitsch2017tanks,yao2018mvsnet} to evaluate the reconstructions using \textbf{Accuracy} - the distance from the reconstruction's vertices to the ground truth, and \textbf{Completion} - the distance from the ground truth's vertices to the reconstruction. Thus, if a method reconstructs only the frontal face, it might do well in Accuracy and be penalized in Completion. We report the mean and median of these distances, averaged over the 10 subjects, in Table \ref{table:results}.
 
 \textbf{Ablation.} Without edges, without ear landmarks
 
@@ -305,21 +303,21 @@ As also noted in \cite{hernandez2017accurate}, certain methods that just reconst
 \cline{3-8}
 & & Mean & Std. Dev. & Median & Mean & Std. Dev. & Median\\
 \hline\hline
-Mean Basel \cite{blanz1999morphable}       & -        & 3.2  & &     & 0.775    & & \\ 
-Landmark fitting \cite{huber2016multiresolution}  & Single  & 2.6  & & & 0.766     & &     \\ 
-pix2vertex \cite{sela2017unrestricted} & Single & 3.32 & & & 11 & &  \\
+Mean Basel \cite{blanz1999morphable}       & - & 3.09  & 1.29 &  2.62 & 3.02 & 1.25  & 2.76 \\ 
+Landmark fitting \cite{huber2016multiresolution}  & Single  & 2.43  & 0.62 & & 0.766     & &     \\ 
+pix2vertex \cite{sela2017unrestricted} & Single & 3.64 & 0.76 &  & 11 & &  \\
 PRN \cite{feng2018joint} & Single & 3.1 & & & 8 & & \\
-Edge-fitting \cite{bas2016fitting} & Single & 2.7 & & & 6 & & \\
+Edge-fitting \cite{bas2016fitting} & Single & 3.06 & 1.28 & 2.63 & 3.02 & 1.25 & 2.75 \\
 
 \hline
-M.view lm fit \cite{huber2016multiresolution,huber2015fitting} & Multi   & 1.89 & &       & 0.746          & &   \\ 
-Roth \etal \cite{roth2015unconstrained}     & Multi      & 2.741 & & & 3 & & \\
-SfM \cite{schonberger2016structure} & Multi & 5.4 & & & 1.7 & & \\
+M.view lm fit \cite{huber2016multiresolution,huber2015fitting} & Multi   & 2.23 & 0.41 &    1.69   & 7.87          & 1.98 & 3.60   \\ 
+Roth \etal \cite{roth2015unconstrained}     & Multi      & 3.54 & 1.3 & 2.65 & 3 & & \\
+SfM \cite{schonberger2016structure} & Multi & 5.42 & 2.55 & 3.61 & 4.72 & 2.41 & 3.60 \\
 PCSfM* \cite{hernandez2017accurate} & Multi & 2.34 & & & 2.2 & & \\
 \hline
-Ours w/o Edges    &  Multi  & 1.378 & & & 1.30 & &     \\
-Ours w/o ear lms    &  Multi     & 1.320 & & & 1.41 & &      \\
-Ours    &  Multi     & 1.273 & &    & 1.29 & &     \\
+Ours w/o Edges    &  Multi  & 1.38 & 0.24 &  & 1.30 & &     \\
+Ours w/o ear lms    &  Multi     & 1.33 & 0.27 & & 1.41 & &      \\
+Ours    &  Multi     & \textbf{1.24} & 0.26 & \textbf{0.95} & \textbf{1.29} & 0.29 & \textbf{0.95}     \\
 
 % \specialrule{.16em}{.08em}{.081em}
 \hline
@@ -373,7 +371,8 @@ Ours    &  Multi     & 1.273 & &    & 1.29 & &     \\
 
 \subsection{Qualitative evaluation} \label{sec:qual}
 
-Fig. \ref{fig:results} compares our mesh reconstructions with the existing single and multi-view face reconstruction methods.  
+Fig. \ref{fig:results} compares our mesh reconstructions with the existing single and multi-view face reconstruction methods. We can clearly observe the limitations of single-view methods ~\cite{sela2017unrestricted, feng2018joint} in capturing an accurate face geometry. Meshes from ~\cite{huber2016multiresolution} are overly smooth. Except ours, all methods are unable to capture the profile geometry of faces. 
+
 Fig. \ref{fig:long} shows a comparison between our results against against scans obtained by a commercially available structured light based RGB-D sensor ~\cite{structure2019}. We can notice that our method preserves a lot more facial details while being relatively more accessible to end user.
 
 % \subsubsection{Expressions}
@@ -446,7 +445,7 @@ We hope that this dataset will help further the research and evaluation of uncon
 \begin{figure}
 \begin{center}
 % \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
-   \includegraphics[width=0.6\linewidth]{images/struc_3d_comp.png}
+   \includegraphics[width=0.6\linewidth]{images/struct_3d_new.png}
 \end{center}
    \caption{(Middle) Output from Structure RGB-D Sensor \cite{structure2019}. Details like the eyes, nose and lips are excessively smoothed out. (Right) Our reconstruction.}
 \label{fig:long}
