@@ -70,7 +70,7 @@ First line of institution2 address\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   We propose a novel, fully automatic method to reconstruct accurate face geometry of a subject using a single short video shot from a handheld device using a video shot from a smartphone, in an unconstrained environment. Our approach takes advantage of recent advances in visual SLAM, keypoint detection and object detection to improve accuracy and robustness. The reconstructed meshes capture important details while being robust to noise and having consistent topology. Our evaluations show that our method outperforms current single and multi view baselines by a large margin, both in terms of geometric accuracy and in capturing person-specifc details important for making recognizable models. 
+    High fidelity face reconstructions have so far been limited to either studio settings or through laser scanners. In this paper, we propose a fully automatic method to reconstruct accurate face geometry of a subject using a video shot from a smartphone, in an unconstrained environment. Our approach takes advantage of recent advances in visual SLAM, keypoint detection and object detection to improve accuracy and robustness. Our reconstructed meshes capture important details while being robust to noise and being topologically consistent. Our evaluations show that our method outperforms current single and multi-view baselines by a significant margin, both in terms of geometric accuracy and in capturing person-specific details important for making realistic looking models. 
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -160,6 +160,7 @@ Example point clouds output at this step are visualized in Fig \ref{fig:pcl_samp
 \begin{center}
    \includegraphics[width=0.95\linewidth]{images/point_clouds_sample.png}
 \end{center}
+\vspace{-1cm}
    \caption{Example point clouds generated at the end of our Point cloud generation stage, with and without texture. The point clouds accurately capture the overall face geometry and a lot of details in areas like eyes and lips, that make the person recognizable. However, the point clouds have missing data as well as noise, which requires a robust mesh fitting approach, discussed in Section \ref{sec:mesh_fit}.  }
 \label{fig:pcl_sample}
 \end{figure}
@@ -381,33 +382,40 @@ Ours    &  Multi     & 1.273 & &    & 1.29 & &     \\
 
 Compare against scan obtained by structure 3d sensor -> comment on better than low cost depth sensor, while being eeve easier for the end user.
 
-\subsubsection{Expressions}
+% \subsubsection{Expressions}
 
- \begin{figure}[t]
-\begin{center}
-   \includegraphics[width=0.8\linewidth]{images/expression_dummy.png}
-\end{center}
-   \caption{ TEMP, DONT PUT SELF FACE- COLLECT other scans from lab, potentially push to supplementary }
-\label{fig:expressions}
-\end{figure}
+%  \begin{figure}[t]
+% \begin{center}
+%   \includegraphics[width=0.8\linewidth]{images/expression_dummy.png}
+% \end{center}
+%   \caption{ TEMP, DONT PUT SELF FACE- COLLECT other scans from lab, potentially push to supplementary }
+% \label{fig:expressions}
+% \end{figure}
 
- \begin{figure}[t]
-\begin{center}
-   \includegraphics[width=0.8\linewidth]{images/high_freq.png}
-\end{center}
-   \caption{Sample results of our reconstructed meshes (left) augmented using a modified scheme of mesoscopic augmentations(right)}
-\label{fig:expressions}
-\end{figure}
+%  \begin{figure}[t]
+% \begin{center}
+%   \includegraphics[width=0.8\linewidth]{images/high_freq.png}
+% \end{center}
+%   \caption{Sample results of our reconstructed meshes (left) augmented using a modified scheme of mesoscopic augmentations(right)}
+% \label{fig:expressions}
+% \end{figure}
 
-Since our method captures the geometry of the face in a completely data-driven manner, it also generalizes to deformations caused by expressions. 
-Since it is difficult to hold the same expression through a video sequence and also obtain a corresponding ground truth 3D, we skip quantitative evaluation of this and provide some qualitative visualizations in Fig \ref{fig:expressions}. 
-We also note that since there is dense correspondence and consistent topology across meshes, various existing techniques \cite{}  anchor frames, rigging, animation, blendshapes/warehouse, can be applied with our reconstructed meshes to generate animated, expressive face models.
+% Since our method captures the geometry of the face in a completely data-driven manner, it also generalizes to deformations caused by expressions. 
+% Since it is difficult to hold the same expression through a video sequence and also obtain a corresponding ground truth 3D, we skip quantitative evaluation of this and provide some qualitative visualizations in Fig \ref{fig:expressions}. 
+% We also note that since there is dense correspondence and consistent topology across meshes, various existing techniques \cite{}  anchor frames, rigging, animation, blendshapes/warehouse, can be applied with our reconstructed meshes to generate animated, expressive face models.
 
 
 \subsubsection{Fine detail enhancement}
 A recent trend in the 3D face reconstruction research has been to emboss fine high-frequency details to the reconstruction using techniques like shape-from-shading or mesoscopic augmentations using texture cues. While not always reflecting the true geometry of the surface, these methods add realism to the mesh, which can be desirable for purposes like animation. Such methods can easily be applied to our reconstructions as well.\\
 Recently, Sela \etal\cite{sela2017unrestricted} showed impressive results by interpreting the idea of high frequency mesoscopic augmentations \cite{beeler2010high} through mesh heat flows. In our experiments, we found this method to not adapt well to ``in-the-wild" images, distorting the mesh too much due to sensor noise/unconstrained lighting. We make some modifications to their method to add details without losing the underlying mesh structure. 
 Since this method is based on a "dark-is-deep" assumption and not necessarily founded in geometry, we skip quantitative evaluation for these results and simply provide qualitative comparisons between our reconstructions, with and without our augmentation scheme, compared to the augmentation scheme of \cite{sela2017unrestricted}. Details on the modifications made are provided in the supplementary.
+ \begin{figure}[t]
+\begin{center}
+  \includegraphics[width=0.8\linewidth]{images/high_freq.png}
+\end{center}
+  \caption{Sample results of our reconstructed meshes (left) augmented using a modified scheme of mesoscopic augmentations(right)}
+\label{fig:expressions}
+\end{figure}
 % \begin{itemize}
 %     \item Previous work on "dark-is-deep" assumption. Mention learnt mesoscopic and studio requirement
 %     \item Mention i2i mesh heat flow for high pass, we propose band pass formulation 
